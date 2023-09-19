@@ -1,203 +1,121 @@
 import 'dart:developer';
-import 'dart:typed_data';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:playground/utils.dart';
-import 'package:signature/signature.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter/services.dart';
+import 'package:image_compare/image_compare.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:lottie/lottie.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
 
   @override
-  State<Home> createState() => _HomeState();
+  HomeState createState() => HomeState();
 }
 
-class _HomeState extends State<Home> {
-  // initialize the signature controller
-  final SignatureController _controller = SignatureController(
-    penStrokeWidth: 4,
-    penColor: Colors.purple,
-    exportBackgroundColor: Colors.transparent,
-    exportPenColor: Colors.black,
-    onDrawStart: () => log('onDrawStart called!'),
-    onDrawEnd: () => log('onDrawEnd called!'),
-    strokeCap: StrokeCap.butt,
-  );
-
-  @override
-  void initState() {
-    super.initState();
-    _controller.addListener(() => log('Value changed'));
-  }
-
-  @override
-  void dispose() {
-    // IMPORTANT to dispose of the controller
-    _controller.dispose();
-    super.dispose();
-  }
-
-  Future<void> exportImage(BuildContext context) async {
-    if (_controller.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          key: Key('snackbarPNG'),
-          content: Text('No content'),
-        ),
-      );
-      return;
-    }
-
-    final Uint8List? data =
-        await _controller.toPngBytes(height: 400, width: 400);
-    if (data == null) {
-      return;
-    }
-
-    if (!mounted) return;
-
-    await push(
-      context,
-      Scaffold(
-        appBar: AppBar(
-          title: const Text('PNG Image'),
-        ),
-        body: Center(
-          child: Container(
-            color: Colors.grey[300],
-            child: Image.memory(data),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> exportSVG(BuildContext context) async {
-    if (_controller.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          key: Key('snackbarSVG'),
-          content: Text('No content'),
-        ),
-      );
-      return;
-    }
-
-    final SvgPicture data = _controller.toSVG()!;
-
-    if (!mounted) return;
-
-    await push(
-      context,
-      Scaffold(
-        appBar: AppBar(
-          title: const Text('SVG Image'),
-        ),
-        body: Center(
-          child: Container(
-            color: Colors.grey[300],
-            child: data,
-          ),
-        ),
-      ),
-    );
-  }
+class HomeState extends State<Home> {
+  File? image1, image2;
 
   @override
   Widget build(BuildContext context) {
+    double? assetsResult;
+
+    void showResult() {
+      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'difference ratio: ${(assetsResult! * 100).toStringAsFixed(2)}',
+            style: const TextStyle(
+              color: Colors.purple,
+              fontSize: 18.0,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          showCloseIcon: true,
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.white,
+          duration: const Duration(seconds: 30),
+          margin: const EdgeInsets.all(8),
+        ),
+      );
+      setState(() {
+        image1 = null;
+        image2 = null;
+      });
+    }
+
+    Future<File> pickImage() async {
+      final pickedImage =
+          await ImagePicker().pickImage(source: ImageSource.camera);
+      final image = File(pickedImage!.path);
+      return image;
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Signature Application'),
+        title: const Text('Client Information'),
       ),
-      body: ListView(
-        children: <Widget>[
-          const SizedBox(
-            height: 300,
-            child: Center(
-              child: Text('Big container to test scrolling issues'),
-            ),
-          ),
-          Signature(
-            key: const Key('signature'),
-            controller: _controller,
-            height: 300,
-            backgroundColor: Colors.grey[300]!,
-          ),
-          const SizedBox(
-            height: 300,
-            child: Center(
-              child: Text('Big container to test scrolling issues'),
-            ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: BottomAppBar(
-        child: Container(
-          decoration: const BoxDecoration(color: Colors.black),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            mainAxisSize: MainAxisSize.max,
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              IconButton(
-                key: const Key('exportPNG'),
-                icon: const Icon(Icons.image),
-                color: Colors.blue,
-                onPressed: () => exportImage(context),
-                tooltip: 'Export Image',
+              Container(
+                width: 150,
+                height: 150,
+                decoration: BoxDecoration(
+                  color: image1 != null ? Colors.grey : null,
+                ),
+                child: image1 != null
+                    ? Image.file(
+                        image1!,
+                      )
+                    : ElevatedButton(
+                        onPressed: () async {
+                          image1 = await pickImage();
+                          setState(() {});
+                        },
+                        child: const Text('pick image'),
+                      ),
               ),
-              IconButton(
-                key: const Key('exportSVG'),
-                icon: const Icon(Icons.share),
-                color: Colors.blue,
-                onPressed: () => exportSVG(context),
-                tooltip: 'Export Image',
-              ),
-              IconButton(
-                icon: const Icon(Icons.undo),
-                color: Colors.blue,
-                onPressed: () {
-                  setState(() {
-                    _controller.undo();
-                  });
-                },
-                tooltip: 'Undo',
-              ),
-              IconButton(
-                icon: const Icon(Icons.redo),
-                color: Colors.blue,
-                onPressed: () {
-                  setState(() {
-                    _controller.redo();
-                  });
-                },
-                tooltip: 'Redo',
-              ),
-              IconButton(
-                key: const Key('clear'),
-                icon: const Icon(Icons.clear),
-                color: Colors.blue,
-                onPressed: () {
-                  setState(() {
-                    _controller.clear();
-                  });
-                },
-                tooltip: 'Clear',
-              ),
-              IconButton(
-                key: const Key('stop'),
-                icon:
-                    Icon(_controller.disabled ? Icons.pause : Icons.play_arrow),
-                color: Colors.blue,
-                onPressed: () {
-                  setState(() {
-                    _controller.disabled = !_controller.disabled;
-                  });
-                },
-                tooltip: _controller.disabled ? 'Pause' : 'Play',
+              Container(
+                width: 150,
+                height: 150,
+                decoration: BoxDecoration(
+                  color: image2 != null ? Colors.grey : null,
+                ),
+                child: image2 != null
+                    ? Image.file(
+                        image2!,
+                      )
+                    : ElevatedButton(
+                        onPressed: () async {
+                          image2 = await pickImage();
+                          setState(() {});
+                        },
+                        child: const Text('pick image'),
+                      ),
               ),
             ],
           ),
-        ),
+          const SizedBox(
+            height: 40,
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              assetsResult = await compareImages(
+                src1: image1,
+                src2: image2,
+              );
+              showResult();
+            },
+            child: const Text('Compare'),
+          ),
+        ],
       ),
     );
   }
