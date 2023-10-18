@@ -1,8 +1,6 @@
-import 'package:easy_stepper/easy_stepper.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:playground/home.dart';
-import 'package:playground/signature.dart';
+import 'package:playground/gradient_text.dart';
 
 void main() {
   runApp(const MyApp());
@@ -19,7 +17,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      home: Home(),
+      home: GradientTextExample(),
     );
   }
 }
