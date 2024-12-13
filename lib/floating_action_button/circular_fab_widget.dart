@@ -2,16 +2,29 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-double buttonSize = 60;
-
-class CircularFabWidget extends StatefulWidget {
+class CircularFabWidget extends StatelessWidget {
   const CircularFabWidget({super.key});
 
   @override
-  State<CircularFabWidget> createState() => _CircularFabWidgetState();
+  Widget build(BuildContext context) {
+    return Scaffold(
+      floatingActionButton: CircularFabFloatingActionButton(),
+    );
+  }
 }
 
-class _CircularFabWidgetState extends State<CircularFabWidget>
+double buttonSize = 60;
+
+class CircularFabFloatingActionButton extends StatefulWidget {
+  const CircularFabFloatingActionButton({super.key});
+
+  @override
+  State<CircularFabFloatingActionButton> createState() =>
+      _CircularFabFloatingActionButton();
+}
+
+class _CircularFabFloatingActionButton
+    extends State<CircularFabFloatingActionButton>
     with SingleTickerProviderStateMixin {
   late AnimationController controller;
 
@@ -57,6 +70,7 @@ class _CircularFabWidgetState extends State<CircularFabWidget>
           },
           elevation: 0,
           splashColor: Colors.black,
+          backgroundColor: Colors.amber,
           child: Icon(
             icon,
             color: Colors.white,
