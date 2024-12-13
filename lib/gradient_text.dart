@@ -1,21 +1,8 @@
 import 'package:flutter/material.dart';
 
-class GradientText extends StatefulWidget {
+class GradientText extends StatelessWidget {
   const GradientText({super.key});
 
-  @override
-  State<GradientText> createState() => _GradientTextState();
-}
-
-class _GradientTextState extends State<GradientText> {
-  late AnimationController animationController;
-  late Animation animation;
-
-  @override
-  void initState() {
-    animation
-    super.initState();
-  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
