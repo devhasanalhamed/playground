@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:im_stepper/stepper.dart';
 
 class DotStepperDemo extends StatefulWidget {
+  const DotStepperDemo({super.key});
+
   @override
-  _DotStepperDemo createState() => _DotStepperDemo();
+  State<StatefulWidget> createState() => _DotStepperDemo();
 }
 
 class _DotStepperDemo extends State<DotStepperDemo> {
