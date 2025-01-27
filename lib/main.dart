@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:playground/calendar/calendar_provider.dart';
 import 'package:playground/calendar/calendar_screen.dart';
-import 'package:playground/home.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,8 +17,11 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: CalendarScreen(),
+    return ChangeNotifierProvider(
+      create: (context) => CalendarProvider(),
+      child: const MaterialApp(
+        home: CalendarScreen(),
+      ),
     );
   }
 }
