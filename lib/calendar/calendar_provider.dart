@@ -1,15 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:playground/calendar/user_appointment.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
-
-class Meeting {
-  Meeting(this.eventName, this.from, this.to, this.background, this.isAllDay);
-
-  String eventName;
-  DateTime from;
-  DateTime to;
-  Color background;
-  bool isAllDay;
-}
 
 class CalendarProvider extends ChangeNotifier {
   List<CalendarView> views = [
@@ -30,20 +21,35 @@ class CalendarProvider extends ChangeNotifier {
     nonWorkingDays: <int>[DateTime.saturday, DateTime.friday],
   );
 
-  List<Meeting> getDataSource() {
-    final List<Meeting> meetings = <Meeting>[];
+  List<UserAppointment> appointments = [];
+
+  void addAppointment(UserAppointment appointment) {
+    appointments.add(appointment);
+    print(appointments.length);
+    notifyListeners();
+  }
+
+  List<UserAppointment> getDataSource() {
+    final List<UserAppointment> meetings = <UserAppointment>[];
     final DateTime today = DateTime.now();
     final DateTime startTime =
         DateTime(today.year, today.month, today.day, 9, 0, 0);
     final DateTime endTime = startTime.add(const Duration(hours: 2));
-    meetings.add(Meeting(
-        'Conference', startTime, endTime, const Color(0xFF0F8644), false));
+    meetings.add(
+      UserAppointment(
+        name: 'Conference',
+        description: 'we have to meet today!',
+        from: startTime,
+        to: endTime,
+        isAllDay: false,
+      ),
+    );
     return meetings;
   }
 }
 
-class MeetingDataSource extends CalendarDataSource {
-  MeetingDataSource(List<Meeting> source) {
+class AppointmentsDataSource extends CalendarDataSource {
+  AppointmentsDataSource(List<UserAppointment> source) {
     appointments = source;
   }
 
@@ -59,7 +65,7 @@ class MeetingDataSource extends CalendarDataSource {
 
   @override
   String getSubject(int index) {
-    return appointments![index].eventName;
+    return appointments![index].name;
   }
 
   @override
