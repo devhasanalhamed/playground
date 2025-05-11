@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 
@@ -19,25 +20,7 @@ class _MyAppState extends State<MyApp> {
   late Timer timer;
   late int t;
   late int time;
-
-  start() {
-    timer = Timer.periodic(Duration(seconds: 1), (_) {
-      if (time <= 0) {
-        timer.cancel();
-      } else {
-        setState(() {
-          time -= 1;
-        });
-      }
-    });
-  }
-
-  reset() {
-    timer.cancel();
-    setState(() {
-      time = t;
-    });
-  }
+  bool _isActive = false;
 
   @override
   void initState() {
@@ -52,15 +35,53 @@ class _MyAppState extends State<MyApp> {
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
+  bool get isActive {
+    if (time < t || _isActive) {
+      return true;
+    }
+    return false;
+  }
+
+  start() {
+    if (!isActive) {
+      setState(() {
+        _isActive = true;
+      });
+      timer = Timer.periodic(Duration(seconds: 1), (_) {
+        if (time <= 0) {
+          timer.cancel();
+        } else {
+          setState(() {
+            time -= 1;
+          });
+        }
+      });
+    }
+  }
+
+  reset(int duration) {
+    if (isActive) {
+      timer.cancel();
+    }
+    setState(() {
+      _isActive = false;
+      t = duration;
+      time = t;
+    });
+  }
+
+  String counter(int time) {
     final minutes = '${time ~/ 60}'.padLeft(2, '0');
     final seconds = '${time % 60}'.padLeft(2, '0');
-    final currentTime = '$minutes:$seconds';
+    return '$minutes:$seconds';
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: Text('Counter'),
+          title: Text('Pomodoro'),
           centerTitle: true,
         ),
         body: Column(
@@ -71,7 +92,7 @@ class _MyAppState extends State<MyApp> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    currentTime,
+                    counter(time),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 48.0,
@@ -81,13 +102,31 @@ class _MyAppState extends State<MyApp> {
                 ],
               ),
             ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: durations
+                  .map(
+                    (e) => ChoiceChip(
+                      label: Text(
+                        counter(e),
+                      ),
+                      selected: e == t,
+                      onSelected: (value) => reset(e),
+                    ),
+                  )
+                  .toList(),
+            ),
             const SizedBox(
               height: 16.0,
             ),
-            if (time != t)
-              CustomElevatedButton(title: 'Reset', onPressed: reset),
-            if (time == t)
+            if (!isActive)
               CustomElevatedButton(title: 'Start', onPressed: start),
+            if (isActive)
+              CustomElevatedButton(
+                title: 'Reset',
+                onPressed: () => reset(t),
+                color: Colors.amber,
+              ),
           ],
         ),
       ),
