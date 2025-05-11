@@ -63,32 +63,63 @@ class _MyAppState extends State<MyApp> {
           title: Text('Counter'),
           centerTitle: true,
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      currentTime,
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.titleLarge,
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    currentTime,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 48.0,
+                      fontWeight: FontWeight.bold,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              const SizedBox(
-                height: 16.0,
-              ),
-              if (time != t)
-                ElevatedButton(onPressed: reset, child: Text('Reset')),
-              if (time == t)
-                ElevatedButton(onPressed: start, child: Text('Start'))
-            ],
+            ),
+            const SizedBox(
+              height: 16.0,
+            ),
+            if (time != t)
+              CustomElevatedButton(title: 'Reset', onPressed: reset),
+            if (time == t)
+              CustomElevatedButton(title: 'Start', onPressed: start),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class CustomElevatedButton extends StatelessWidget {
+  final String title;
+  final VoidCallback onPressed;
+  final Color color;
+  const CustomElevatedButton(
+      {super.key,
+      required this.title,
+      required this.onPressed,
+      this.color = Colors.deepPurpleAccent});
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.zero,
           ),
+          fixedSize: Size.fromHeight(64.0)),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 24.0,
         ),
       ),
     );
